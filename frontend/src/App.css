@@ -1,0 +1,157 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #0f172a;
+  color: white;
+}
+
+.app {
+  min-height: 100vh;
+}
+
+.header {
+  text-align: center;
+  padding: 50px 20px 30px;
+}
+
+.header h1 {
+  margin: 0;
+  font-size: 48px;
+}
+
+.header p {
+  color: #94a3b8;
+  font-size: 18px;
+  margin-top: 10px;
+}
+
+.container {
+  max-width: 1100px;
+  margin: auto;
+  padding: 20px;
+}
+
+.input-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 25px;
+}
+
+.input-card,
+.result-card {
+  background: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 16px;
+  padding: 25px;
+}
+
+.input-card h2 {
+  margin-top: 0;
+}
+
+.input-card p {
+  color: #94a3b8;
+}
+
+textarea {
+  width: 100%;
+  height: 300px;
+  margin-top: 15px;
+  padding: 15px;
+  border-radius: 10px;
+  border: 1px solid #475569;
+  background: #0f172a;
+  color: white;
+  font-size: 15px;
+  resize: vertical;
+  outline: none;
+}
+
+textarea:focus {
+  border-color: #8b5cf6;
+}
+
+.analyze-button {
+  display: block;
+  margin: 30px auto;
+  padding: 15px 35px;
+  border: none;
+  border-radius: 10px;
+  background: #8b5cf6;
+  color: white;
+  font-size: 17px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.analyze-button:hover {
+  background: #7c3aed;
+}
+
+.analyze-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.error {
+  background: #451a1a;
+  border: 1px solid #ef4444;
+  color: #fca5a5;
+  padding: 15px;
+  border-radius: 10px;
+  margin: 20px 0;
+  text-align: center;
+}
+
+.results {
+  margin-top: 50px;
+  padding-bottom: 60px;
+}
+
+.results > h2 {
+  text-align: center;
+  font-size: 32px;
+}
+
+.score {
+  text-align: center;
+  margin: 30px 0;
+}
+
+.score span {
+  font-size: 70px;
+  font-weight: bold;
+}
+
+.score small {
+  font-size: 25px;
+  color: #94a3b8;
+}
+
+.result-card {
+  margin-top: 20px;
+}
+
+.result-card h3 {
+  margin-top: 0;
+}
+
+.result-card p,
+.result-card li {
+  color: #cbd5e1;
+  line-height: 1.7;
+}
+
+@media (max-width: 800px) {
+  .input-section {
+    grid-template-columns: 1fr;
+  }
+
+  .header h1 {
+    font-size: 36px;
+  }
+}
