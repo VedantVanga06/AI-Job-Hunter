@@ -13,6 +13,7 @@ import os
 import tempfile
 
 from services.ai_service import analyze_resume, analyze_resume_profile, generate_cover_letter
+from services.resume_improver import improve_resume
 
 from services.resume_parser import extract_resume_text
 
@@ -394,3 +395,36 @@ def generate_cover_letter_endpoint(request: CoverLetterRequest):
     )
 
     return result
+
+# ==========================================
+# AI RESUME IMPROVEMENT
+# ==========================================
+
+class ResumeImprovementRequest(BaseModel):
+    resume: str
+
+
+@app.post("/api/improve-resume")
+def improve_resume_endpoint(request: ResumeImprovementRequest):
+    if not request.resume.strip():
+        raise HTTPException(status_code=400, detail="Resume text cannot be empty.")
+
+    try:
+        return improve_resume(request.resume)
+    except Exception as e:
+        error_message = str(e)
+        print("Resume improvement error:", error_message)
+        if "429" in error_message or "quota" in error_message.lower():
+            raise HTTPException(
+                status_code=429,
+                detail="Gemini quota is temporarily exhausted. Please wait before trying again.",
+            )
+        if "GEMINI_API_KEY" in error_message:
+            raise HTTPException(
+                status_code=503,
+                detail="AI service is not configured. Set GEMINI_API_KEY in backend/.env.",
+            )
+        raise HTTPException(
+            status_code=502,
+            detail="Resume improvement failed. Please try again later.",
+        )
