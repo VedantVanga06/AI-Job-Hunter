@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "./App.css";
 
-const API = "http://127.0.0.1:8000";
+const API = (import.meta.env.VITE_API_BASE_URL || "http://127.0.0.1:8000").replace(/\/$/, "");
 
 function App() {
   // ================================
@@ -20,6 +20,8 @@ function App() {
   const [savingApplication, setSavingApplication] = useState(false);
 const [coverLetter, setCoverLetter] = useState("");
 const [generatingCoverLetter, setGeneratingCoverLetter] = useState(false);
+  const [resumeImprovement, setResumeImprovement] = useState(null);
+  const [improvingResume, setImprovingResume] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
 
@@ -207,6 +209,24 @@ const filteredApplications = [...applications]
       setAnalyzing(false);
     }
   };
+const handleImproveResume = async () => {
+  setError("");
+  setResumeImprovement(null);
+  if (!resumeText.trim()) { setError("Please upload your resume first."); return; }
+  setImprovingResume(true);
+  try {
+    const response = await fetch(API + "/api/improve-resume", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ resume: resumeText }),
+    });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.detail || "Resume improvement failed.");
+    setResumeImprovement(data);
+  } catch (err) {
+    setError(err.message || "Could not improve the resume. Check that the API is running.");
+  } finally { setImprovingResume(false); }
+};
+
 const handleGenerateCoverLetter = async () => {
   setError("");
 
@@ -648,6 +668,46 @@ const handleGenerateCoverLetter = async () => {
             </div>
           </section>
         )}
+{resumeText && (
+  <section className="resume-improver-section">
+    <div className="resume-improver-header">
+      <div>
+        <span className="resume-eyebrow">AI RESUME STUDIO</span>
+        <h2>Improve your resume</h2>
+        <p>Get practical, ATS-aware feedback grounded in your actual resume.</p>
+      </div>
+      <button className="improve-resume-button" onClick={handleImproveResume} disabled={improvingResume || uploading}>
+        {improvingResume ? "Improving resume…" : "✨ Improve my resume"}
+      </button>
+    </div>
+    {resumeImprovement && (
+      <div className="resume-improvement-grid">
+        <article className="improvement-card improvement-featured">
+          <span className="improvement-label">PROFESSIONAL SUMMARY</span>
+          <h3>Suggested summary</h3>
+          <p>{resumeImprovement.professional_summary}</p>
+          <button className="secondary-action" onClick={() => navigator.clipboard.writeText(resumeImprovement.professional_summary || "")}>Copy summary</button>
+        </article>
+        {[
+          ["Skills to highlight", "skills_to_highlight"],
+          ["Stronger bullet points", "improved_bullet_points"],
+          ["Keywords to consider", "missing_keywords"],
+          ["ATS improvements", "ats_improvements"],
+          ["Project improvements", "project_improvements"],
+          ["Priority recommendations", "recommendations"],
+        ].map(([title, key]) => (
+          <article className="improvement-card" key={key}>
+            <h3>{title}</h3>
+            {Array.isArray(resumeImprovement[key]) && resumeImprovement[key].length ? (
+              <ul>{resumeImprovement[key].map((item, index) => <li key={index}>{item}</li>)}</ul>
+            ) : <p className="muted-copy">No specific items returned.</p>}
+          </article>
+        ))}
+      </div>
+    )}
+    <p className="resume-disclaimer">Review every suggestion before using it. Never add skills, experience, or achievements that are not true.</p>
+  </section>
+)}
 <div className="cover-letter-box">
   <button
     className="cover-letter-button"
