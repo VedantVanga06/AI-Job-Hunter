@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 import os
 import tempfile
 
-from services.ai_service import analyze_resume, analyze_resume_profile, generate_cover_letter
+from services.ai_service import analyze_resume, analyze_resume_profile, generate_cover_letter, generate_interview_prep
 from services.resume_improver import improve_resume
 
 from services.resume_parser import extract_resume_text
@@ -88,6 +88,7 @@ class JobApplicationCreate(BaseModel):
 class JobApplicationUpdate(BaseModel):
     status: str | None = None
     notes: str | None = None
+    job_url: str | None = None
 
 
 # ==========================================
@@ -348,6 +349,9 @@ def update_application(
     if update.notes is not None:
         application.notes = update.notes
 
+    if update.job_url is not None:
+        application.job_url = update.job_url
+
     db.commit()
     db.refresh(application)
 
@@ -432,3 +436,28 @@ def improve_resume_endpoint(request: ResumeImprovementRequest):
             status_code=502,
             detail="Resume improvement failed. Please try again later.",
         )
+
+
+class InterviewPrepRequest(BaseModel):
+    resume: str
+    job_description: str
+    job_title: str = ""
+    company_name: str = ""
+
+
+@app.post("/api/interview-prep")
+def interview_prep_endpoint(request: InterviewPrepRequest):
+    if not request.resume.strip() or not request.job_description.strip():
+        raise HTTPException(status_code=400, detail="Resume and job description are required.")
+    try:
+        return generate_interview_prep(
+            request.resume, request.job_description, request.job_title, request.company_name
+        )
+    except Exception as e:
+        message = str(e)
+        print("Interview preparation error:", message)
+        if "429" in message or "quota" in message.lower():
+            raise HTTPException(status_code=429, detail="Gemini quota is temporarily exhausted. Please wait before trying again.")
+        if "GEMINI_API_KEY" in message:
+            raise HTTPException(status_code=503, detail="AI service is not configured. Add GEMINI_API_KEY in Render environment settings.")
+        raise HTTPException(status_code=502, detail="Interview preparation failed. Please try again.")
