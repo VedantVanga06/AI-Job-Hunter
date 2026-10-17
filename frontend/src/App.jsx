@@ -796,6 +796,7 @@ const handleGenerateCoverLetter = async () => {
         <section className="tracker">
           <div className="tracker-header">
             <div>
+              <span className="section-index">02 / KEEP MOVING</span>
               <h2>📋 Application Tracker</h2>
 
               <p className="card-description">
@@ -963,14 +964,13 @@ const handleGenerateCoverLetter = async () => {
                           }
                         >
                           <option value="Wishlist">Wishlist</option>
-
+                          <option value="Saved">Saved</option>
                           <option value="Applied">Applied</option>
-
+                          <option value="Assessment">Assessment</option>
                           <option value="Interview">Interview</option>
-
                           <option value="Offer">Offer</option>
-
                           <option value="Rejected">Rejected</option>
+                          <option value="Withdrawn">Withdrawn</option>
                         </select>
                       </div>
 
