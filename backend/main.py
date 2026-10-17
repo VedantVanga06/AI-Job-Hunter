@@ -416,14 +416,21 @@ class CoverLetterRequest(BaseModel):
 
 @app.post("/api/generate-cover-letter")
 def generate_cover_letter_endpoint(request: CoverLetterRequest):
-    result = generate_cover_letter(
-        request.resume,
-        request.job_description,
-        request.job_title,
-        request.company_name
-    )
-
-    return result
+    try:
+        return generate_cover_letter(
+            request.resume,
+            request.job_description,
+            request.job_title,
+            request.company_name,
+        )
+    except Exception as exc:
+        message = str(exc)
+        print("Cover letter generation error:", type(exc).__name__)
+        if "429" in message or "quota" in message.lower():
+            raise HTTPException(status_code=429, detail="Gemini quota is temporarily exhausted. Please wait before trying again.")
+        if "GEMINI_API_KEY" in message:
+            raise HTTPException(status_code=503, detail="AI service is not configured. Add GEMINI_API_KEY in Render environment settings.")
+        raise HTTPException(status_code=502, detail="Cover letter generation failed. Please try again.")
 
 # ==========================================
 # AI RESUME IMPROVEMENT
