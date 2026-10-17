@@ -245,7 +245,7 @@ const handleGenerateCoverLetter = async () => {
 
   try {
     const response = await fetch(
-      "http://127.0.0.1:8000/api/generate-cover-letter",
+      API + "/api/generate-cover-letter",
       {
         method: "POST",
         headers: {
