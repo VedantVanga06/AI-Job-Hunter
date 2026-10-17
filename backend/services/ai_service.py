@@ -246,3 +246,44 @@ Return only the cover letter.
     )
 
     return CoverLetter.model_validate_json(interaction.output_text)
+
+# ==========================================
+# INTERVIEW PREPARATION
+# ==========================================
+class InterviewPreparation(BaseModel):
+    introduction: str
+    technical_questions: List[str]
+    hr_questions: List[str]
+    preparation_tips: List[str]
+
+
+def generate_interview_prep(resume: str, job_description: str, job_title: str = "", company_name: str = "") -> InterviewPreparation:
+    if not resume.strip() or not job_description.strip():
+        raise ValueError("Resume and job description are required.")
+
+    prompt = f"""
+Create practical interview preparation for an early-career candidate.
+Use the resume as the only source for candidate-specific claims. Do not invent experience.
+Role: {job_title}
+Company: {company_name}
+RESUME:
+{resume}
+JOB DESCRIPTION:
+{job_description}
+Return:
+- a natural 45-60 second candidate introduction grounded in the resume
+- 8 role-relevant technical questions (questions only, not answers)
+- 5 realistic HR/behavioral questions
+- 5 focused preparation tips based on this role
+Keep it useful for a student or entry-level applicant.
+"""
+    interaction = _get_client().interactions.create(
+        model="gemini-3.1-flash-lite",
+        input=prompt,
+        response_format={
+            "type": "text",
+            "mime_type": "application/json",
+            "schema": InterviewPreparation.model_json_schema(),
+        },
+    )
+    return InterviewPreparation.model_validate_json(interaction.output_text)
