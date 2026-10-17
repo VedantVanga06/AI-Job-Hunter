@@ -989,12 +989,21 @@ const handleGenerateCoverLetter = async () => {
                       </div>
                     </div>
 
-                    {/* NOTES */}
-
-                    <div className="application-notes">
-                      <span>Notes</span>
-
-                      <p>{application.notes || "No notes added."}</p>
+                    {/* EDITABLE NOTES AND JOB LINK */}
+                    <div className="application-notes application-edit-details">
+                      {editingNotes[application.id] ? (
+                        <>
+                          <label>Job URL<input type="url" value={editingNotes[application.id].job_url} onChange={(e) => setEditingNotes((items) => ({ ...items, [application.id]: { ...items[application.id], job_url: e.target.value } }))} placeholder="https://…" /></label>
+                          <label>Notes<textarea rows={3} value={editingNotes[application.id].notes} onChange={(e) => setEditingNotes((items) => ({ ...items, [application.id]: { ...items[application.id], notes: e.target.value } }))} placeholder="Follow-up date, recruiter, next steps…" /></label>
+                          <div className="edit-actions"><button className="secondary-action" onClick={() => saveApplicationDetails(application.id)}>Save details</button><button className="secondary-action" onClick={() => setEditingNotes((items) => { const next = { ...items }; delete next[application.id]; return next; })}>Cancel</button></div>
+                        </>
+                      ) : (
+                        <>
+                          <span>Notes</span>
+                          <p>{application.notes || "No notes added yet."}</p>
+                          <button className="secondary-action" onClick={() => setEditingNotes((items) => ({ ...items, [application.id]: { notes: application.notes || "", job_url: application.job_url || "" } }))}>Edit notes & link</button>
+                        </>
+                      )}
                     </div>
 
                     {/* DELETE */}
