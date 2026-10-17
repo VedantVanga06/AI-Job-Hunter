@@ -1,6 +1,6 @@
 # AI Job Hunter
 
-An AI-assisted job application workspace built with React, FastAPI, SQLAlchemy, SQLite, and Google's Gemini API. Upload a resume, compare it with a job description, generate application material, and track applications in one place.
+An AI-assisted job application workspace built with React, FastAPI, SQLAlchemy, SQLite for local development (or PostgreSQL for hosted use), and Google's Gemini API. Upload a resume, compare it with a job description, generate application material, and track applications in one place.
 
 ## Features
 
@@ -9,6 +9,7 @@ An AI-assisted job application workspace built with React, FastAPI, SQLAlchemy, 
 - Analyze resume-to-job fit with a match score, matched skills, missing skills, ATS keywords, and actionable suggestions.
 - Review a resume profile independently of a specific role.
 - Generate a tailored cover letter.
+- Generate role-specific interview preparation with a candidate introduction, technical and HR practice questions, and preparation tips.
 - Save job applications and track status, notes, and match scores.
 - Search, filter, and sort saved applications.
 - View application dashboard statistics.
@@ -21,7 +22,7 @@ An AI-assisted job application workspace built with React, FastAPI, SQLAlchemy, 
 | --- | --- |
 | Frontend | React, Vite, JavaScript, CSS |
 | API | Python, FastAPI, Uvicorn, Pydantic |
-| Database | SQLAlchemy, SQLite |
+| Database | SQLAlchemy, SQLite locally; PostgreSQL supported for hosting |
 | AI | Google Gemini API via `google-genai` |
 | Resume parsing | pypdf, python-docx, PyMuPDF, pytesseract, Tesseract OCR |
 
@@ -43,7 +44,7 @@ AI-Job-Hunter/
 │   │   ├── App.css
 │   │   ├── index.css
 │   │   └── main.jsx
-│   └── package.json
+│   ├── .env.example\n│   └── package.json
 ├── .gitignore
 └── README.md
 ```
@@ -101,23 +102,23 @@ npm.cmd run dev
 
 Open the local URL printed by Vite, normally http://localhost:5173.
 
-The frontend expects the API at `http://127.0.0.1:8000`. If you deploy either side, configure the API base URL for that environment rather than hard-coding localhost.
+The frontend defaults to `http://127.0.0.1:8000` locally. Copy `frontend/.env.example` to `frontend/.env` if you need to override `VITE_API_BASE_URL`. Vite environment values are embedded at build time, so set `VITE_API_BASE_URL=https://your-api-host` in the frontend hosting dashboard before building a hosted version. Never put the Gemini API key in the frontend.
 
 ## API overview
 
 - `GET /` — API welcome message
-- `GET /health` — health check
+- `GET /health` — health check including database connectivity
 - `POST /api/upload-resume` — upload and extract PDF/DOCX resume text
 - `POST /api/analyze` — compare resume with a job description
 - `POST /api/analyze-resume` — profile-level resume review
-- `POST /api/generate-cover-letter` — generate a tailored cover letter
+- `POST /api/generate-cover-letter` — generate a tailored cover letter\n- `POST /api/improve-resume` — suggest resume improvements\n- `POST /api/interview-prep` — generate interview preparation
 - `GET /api/applications` — list saved applications
 - `POST /api/applications` — create an application
 - `GET /api/applications/{application_id}` — get one application
 - `PUT /api/applications/{application_id}` — update status/notes
 - `DELETE /api/applications/{application_id}` — delete an application
 
-## Troubleshooting
+## Hosted deployment configuration\n\n### Backend (Render)\n\n- Build command: `cd backend && pip install -r requirements.txt`\n- Start command: `cd backend && uvicorn main:app --host 0.0.0.0 --port $PORT`\n- Set `GEMINI_API_KEY` as a private environment variable in the backend service.\n- For durable hosted application data, provision a managed PostgreSQL database and set its internal connection URL as `DATABASE_URL`. The backend normalizes Render-style `postgres://` URLs and uses PostgreSQL when configured; without it, SQLite is used and may not survive ephemeral filesystem changes.\n- Set `FRONTEND_ORIGINS` to a comma-separated list of trusted frontend origins.\n- Configure the health-check path as `/health`.\n\n### Frontend (Render static site or Netlify)\n\n- Base directory: `frontend` (or run commands from repository root with the `frontend/` prefix).\n- Build command: `npm ci && npm run build` from the frontend directory.\n- Publish directory: `frontend/dist`.\n- Set `VITE_API_BASE_URL` to the deployed backend origin, without a trailing slash.\n\n### Tests\n\nRun backend tests from the `backend` directory after installing `requirements.txt`: `pytest -q`. Run frontend checks from `frontend`: `npm ci`, `npm run build`, and `npm run lint`. GitHub Actions runs these checks for the project branch and pull requests.\n\n## Troubleshooting
 
 - **Gemini quota / HTTP 429:** free-tier usage has rate limits. Wait for the quota window to reset and avoid repeatedly clicking AI actions.
 - **API unavailable / Failed to fetch:** make sure Uvicorn is running and the frontend API URL and CORS origins match.
@@ -128,7 +129,7 @@ The frontend expects the API at `http://127.0.0.1:8000`. If you deploy either si
 
 - Keep API keys in environment variables; never commit `.env`.
 - Resume files can contain personal data. Process them only with consent and avoid logging extracted resume contents.
-- Before public deployment, add request size limits, authentication/rate limiting as appropriate, HTTPS, and production database configuration.
+- The API enforces a 10 MB resume upload limit, validates tracker statuses and field lengths, and checks database connectivity through `/health`. Before handling real users or private applications, add authentication/authorization and rate limiting; the current tracker is not user-isolated, so do not treat it as a multi-user private service yet.
 
 ## Current status
 
