@@ -439,91 +439,66 @@ const handleGenerateCoverLetter = async () => {
       ================================= */}
 
       <header className="header">
-        <div>
-          <h1>AI Job Hunter</h1>
-
-          <p>Turn your resume into a smarter job application.</p>
+        <div className="brand-row">
+          <div className="brand-mark" aria-hidden="true">J<span>H</span></div>
+          <div className="brand-copy">
+            <span className="brand-kicker">PERSONAL CAREER OS</span>
+            <h1>AI Job Hunter</h1>
+          </div>
+          <div className="header-status"><span className="status-dot" /> AI WORKSPACE</div>
+        </div>
+        <div className="hero-copy">
+          <p className="hero-overline">YOUR NEXT CHAPTER STARTS HERE</p>
+          <h2>Make your next move<br /><span>your best one.</span></h2>
+          <p className="hero-description">Understand your fit. Sharpen your story. Keep every opportunity moving forward.</p>
+          <div className="hero-proof">
+            <span><b>01</b> Resume intelligence</span>
+            <span><b>02</b> Role matching</span>
+            <span><b>03</b> Application tracking</span>
+          </div>
+        </div>
+        <div className="hero-orbit" aria-hidden="true">
+          <div className="orbit-ring orbit-ring-one" />
+          <div className="orbit-ring orbit-ring-two" />
+          <div className="orbit-core"><span>AI</span><small>CAREER<br />ENGINE</small></div>
+          <span className="orbit-node orbit-node-one">CV</span>
+          <span className="orbit-node orbit-node-two">↗</span>
+          <span className="orbit-node orbit-node-three">✳</span>
         </div>
       </header>
 
       <main className="container">
-        {/* =================================
-            INPUT SECTION
-        ================================= */}
-
+        <div className="section-intro">
+          <div><span className="section-index">01 / ANALYZE</span><h2>Start with your next opportunity</h2><p>Bring your resume and a role. We’ll help you see the match clearly.</p></div>
+          <span className="private-note"><span>●</span> Your workspace</span>
+        </div>
         <section className="input-grid">
-          {/* RESUME */}
-
-          <div className="card">
-            <h2>📄 Your Resume</h2>
-
-            <p className="card-description">Upload your PDF or DOCX resume.</p>
-
+          <div className="card resume-card">
+            <div className="card-topline"><span className="step-number">01</span><span className="card-tag">YOUR STORY</span></div>
+            <h2>Your resume</h2>
+            <p className="card-description">Start with the experience and skills that make you, you.</p>
             <label className="upload-box">
-              <input
-                type="file"
-                accept=".pdf,.docx"
-                onChange={handleResumeUpload}
-              />
-
-              {uploading ? (
-                <span>⏳ Reading your resume...</span>
-              ) : resumeFile ? (
-                <span>✅ {resumeFile.name}</span>
-              ) : (
-                <span>Click to upload PDF or DOCX</span>
-              )}
+              <input type="file" accept=".pdf,.docx" onChange={handleResumeUpload} />
+              <span className="upload-symbol" aria-hidden="true">↑</span>
+              <strong>{uploading ? "Reading your resume…" : resumeFile ? resumeFile.name : "Drop your resume here"}</strong>
+              <span className="upload-hint">{resumeFile ? "Choose another file to replace it" : "or click to browse your files"}</span>
+              <span className="file-format">PDF <i /> DOCX <i /> UP TO 10 MB</span>
             </label>
-
-            {resumeText && (
-              <div className="success-message">
-                ✓ Resume successfully extracted
-                <span>
-                  {resumeText.length.toLocaleString()} characters detected
-                </span>
-              </div>
-            )}
+            {resumeText && <div className="success-message"><span className="success-dot">✓</span><div><strong>Resume ready to analyze</strong><span>{resumeText.length.toLocaleString()} characters extracted</span></div></div>}
           </div>
-
-          {/* JOB DESCRIPTION */}
-
-          <div className="card">
-            <h2>💼 Job Description</h2>
-
-            <p className="card-description">
-              Enter the job details and paste the job description.
-            </p>
-
+          <div className="card job-card">
+            <div className="card-topline"><span className="step-number">02</span><span className="card-tag">THE OPPORTUNITY</span></div>
+            <h2>Where do you want to go?</h2>
+            <p className="card-description">Add the role details so we can compare what they need with what you bring.</p>
             <div className="job-details-inputs">
-              <input
-                type="text"
-                placeholder="Job Title (e.g. AI/ML Engineer Intern)"
-                value={jobTitle}
-                onChange={(event) => setJobTitle(event.target.value)}
-              />
-
-              <input
-                type="text"
-                placeholder="Company (e.g. Google)"
-                value={companyName}
-                onChange={(event) => setCompanyName(event.target.value)}
-              />
+              <label><span>ROLE TITLE</span><input type="text" aria-label="Job title" placeholder="e.g. AI Engineer Intern" value={jobTitle} onChange={(event) => setJobTitle(event.target.value)} /></label>
+              <label><span>COMPANY</span><input type="text" aria-label="Company name" placeholder="e.g. a team you admire" value={companyName} onChange={(event) => setCompanyName(event.target.value)} /></label>
             </div>
-
-            <textarea
-              className="job-input"
-              placeholder="Paste the job description here..."
-              value={jobDescription}
-              onChange={(event) => setJobDescription(event.target.value)}
-            />
-
-            <button
-              className="analyze-button"
-              onClick={handleAnalyze}
-              disabled={analyzing || uploading || generatingCoverLetter}
-            >
-              {analyzing ? "⏳ Analyzing..." : "Analyze My Match →"}
+            <label className="description-label"><span>JOB DESCRIPTION</span><textarea className="job-input" aria-label="Job description" placeholder="Paste the job description here. Include responsibilities, skills, and qualifications…" value={jobDescription} onChange={(event) => setJobDescription(event.target.value)} /></label>
+            <button className="analyze-button" onClick={handleAnalyze} disabled={analyzing || uploading || generatingCoverLetter}>
+              <span>{analyzing ? "Analyzing your fit…" : "Analyze my match"}</span><span className="button-arrow">↗</span>
             </button>
+            <p className="button-footnote">Thoughtful insights, not automated hiring decisions.</p>
           </div>
         </section>
 
