@@ -9,3 +9,6 @@ pypdf
 python-docx
 PyMuPDF
 pytesseract
+psycopg[binary]
+pytest
+httpx
