@@ -6,9 +6,16 @@ import os
 
 load_dotenv()
 
-client = genai.Client(
-    api_key=os.getenv("GEMINI_API_KEY")
-)
+def _get_client():
+    """Create the Gemini client only when an AI request is made.
+
+    This lets the API start and expose health/docs routes even when the
+    optional Gemini secret has not been configured yet.
+    """
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise RuntimeError("GEMINI_API_KEY is not configured.")
+    return genai.Client(api_key=api_key)
 
 
 # ==========================================
@@ -76,7 +83,7 @@ Practical actions to improve the candidate's chances.
 Return ONLY structured JSON.
 """
 
-    interaction = client.interactions.create(
+    interaction = _get_client().interactions.create(
         model="gemini-3.1-flash-lite",
         input=prompt,
         response_format={
