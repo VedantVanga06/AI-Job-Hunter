@@ -1,17 +1,7 @@
-import os
 from typing import List
 
-from dotenv import load_dotenv
-from google import genai
 from pydantic import BaseModel
-
-load_dotenv()
-
-def _get_client():
-    api_key = os.getenv("GEMINI_API_KEY")
-    if not api_key:
-        raise RuntimeError("GEMINI_API_KEY is not configured.")
-    return genai.Client(api_key=api_key)
+from services.ai_service import _ask_json
 
 
 class ResumeImprovement(BaseModel):
@@ -35,30 +25,11 @@ Rules:
 - Never invent employers, education, skills, projects, metrics, or experience.
 - Do not claim the candidate has a skill merely because it is recommended.
 - Mark missing keywords as suggestions to include only if truthful.
-- When the resume has no clear bullet points to rewrite, say so and offer
-  templates clearly labelled as templates rather than factual achievements.
+- When the resume has no clear bullet points to rewrite, say so and offer templates clearly labelled as templates rather than factual achievements.
 - Keep advice useful for students and early-career applicants.
+- Return JSON with: professional_summary (string), skills_to_highlight (array), improved_bullet_points (array), missing_keywords (array), ats_improvements (array), project_improvements (array), recommendations (array).
 
 RESUME:
 {resume}
-
-Return:
-1. professional_summary: concise summary supported by the resume.
-2. skills_to_highlight: relevant skills already evidenced in the resume.
-3. improved_bullet_points: stronger versions of existing bullets, or clearly
-   labelled templates if there are no bullets to rewrite.
-4. missing_keywords: relevant terms to consider only if the candidate has them.
-5. ats_improvements: formatting, headings, readability and keyword advice.
-6. project_improvements: specific ways to better present existing projects.
-7. recommendations: prioritized practical next steps.
 """
-    interaction = _get_client().interactions.create(
-        model="gemini-3.1-flash-lite",
-        input=prompt,
-        response_format={
-            "type": "text",
-            "mime_type": "application/json",
-            "schema": ResumeImprovement.model_json_schema(),
-        },
-    )
-    return ResumeImprovement.model_validate_json(interaction.output_text)
+    return _ask_json(prompt, ResumeImprovement)
