@@ -20,6 +20,16 @@ function App() {
   const [savingApplication, setSavingApplication] = useState(false);
 const [coverLetter, setCoverLetter] = useState("");
 const [generatingCoverLetter, setGeneratingCoverLetter] = useState(false);
+  const [interviewPrep, setInterviewPrep] = useState(null);
+  const [generatingInterviewPrep, setGeneratingInterviewPrep] = useState(false);
+  const [showManualApplication, setShowManualApplication] = useState(false);
+  const [manualCompany, setManualCompany] = useState("");
+  const [manualTitle, setManualTitle] = useState("");
+  const [manualUrl, setManualUrl] = useState("");
+  const [manualStatus, setManualStatus] = useState("Wishlist");
+  const [manualNotes, setManualNotes] = useState("");
+  const [savingManualApplication, setSavingManualApplication] = useState(false);
+  const [editingNotes, setEditingNotes] = useState({});
   const [resumeImprovement, setResumeImprovement] = useState(null);
   const [improvingResume, setImprovingResume] = useState(false);
   const [result, setResult] = useState(null);
@@ -407,6 +417,58 @@ const handleGenerateCoverLetter = async () => {
     }
   };
 
+  const handleGenerateInterviewPrep = async () => {
+    setError("");
+    if (!resumeText.trim() || !jobDescription.trim()) {
+      setError("Upload your resume and enter a job description before generating interview prep.");
+      return;
+    }
+    setGeneratingInterviewPrep(true);
+    setInterviewPrep(null);
+    try {
+      const response = await fetch(API + "/api/interview-prep", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ resume: resumeText, job_description: jobDescription, job_title: jobTitle, company_name: companyName }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "Interview preparation failed.");
+      setInterviewPrep(data);
+    } catch (err) { setError(err.message || "Could not generate interview preparation."); }
+    finally { setGeneratingInterviewPrep(false); }
+  };
+
+  const handleManualApplicationSave = async (event) => {
+    event.preventDefault();
+    if (!manualCompany.trim() || !manualTitle.trim()) { setError("Company and job title are required."); return; }
+    setSavingManualApplication(true); setError("");
+    try {
+      const response = await fetch(API + "/api/applications", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ company: manualCompany.trim(), job_title: manualTitle.trim(), job_url: manualUrl.trim(), status: manualStatus, notes: manualNotes.trim(), match_score: 0 }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "Could not add application.");
+      setApplications((items) => [data, ...items]);
+      setManualCompany(""); setManualTitle(""); setManualUrl(""); setManualStatus("Wishlist"); setManualNotes(""); setShowManualApplication(false);
+    } catch (err) { setError(err.message || "Could not add application."); }
+    finally { setSavingManualApplication(false); }
+  };
+
+  const saveApplicationDetails = async (applicationId) => {
+    const draft = editingNotes[applicationId];
+    if (!draft) return;
+    try {
+      const response = await fetch(API + "/api/applications/" + applicationId, {
+        method: "PUT", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ notes: draft.notes, job_url: draft.job_url }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.detail || "Could not save application details.");
+      setApplications((items) => items.map((item) => item.id === applicationId ? data : item));
+      setEditingNotes((items) => { const next = { ...items }; delete next[applicationId]; return next; });
+    } catch (err) { setError(err.message || "Could not save application details."); }
+  };
   // ================================
   // SCORE LABEL
   // ================================
