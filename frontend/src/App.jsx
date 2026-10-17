@@ -886,10 +886,14 @@ const handleGenerateCoverLetter = async () => {
     onChange={(e) => setStatusFilter(e.target.value)}
   >
     <option value="All">All Statuses</option>
+    <option value="Wishlist">Wishlist</option>
+    <option value="Saved">Saved</option>
     <option value="Applied">Applied</option>
+    <option value="Assessment">Assessment</option>
     <option value="Interview">Interview</option>
     <option value="Offer">Offer</option>
     <option value="Rejected">Rejected</option>
+    <option value="Withdrawn">Withdrawn</option>
   </select>
 
   <select
