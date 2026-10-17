@@ -224,7 +224,7 @@ def analyze_job(request: JobAnalysisRequest):
         if "429" in error_message or "quota" in error_message.lower():
             raise HTTPException(
                 status_code=429,
-                detail="Gemini free-tier quota has been reached. Please wait and try again later."
+                detail="Groq rate limit has been reached. Please wait and try again later."
             )
 
         raise HTTPException(
@@ -261,7 +261,7 @@ def analyze_resume_endpoint(
             raise HTTPException(
                 status_code=429,
                 detail=(
-                    "Gemini free-tier quota has been reached. "
+                    "Groq rate limit has been reached. "
                     "Please wait and try again later."
                 )
             )
@@ -427,9 +427,9 @@ def generate_cover_letter_endpoint(request: CoverLetterRequest):
         message = str(exc)
         print("Cover letter generation error:", type(exc).__name__)
         if "429" in message or "quota" in message.lower():
-            raise HTTPException(status_code=429, detail="Gemini quota is temporarily exhausted. Please wait before trying again.")
-        if "GEMINI_API_KEY" in message:
-            raise HTTPException(status_code=503, detail="AI service is not configured. Add GEMINI_API_KEY in Render environment settings.")
+            raise HTTPException(status_code=429, detail="Groq rate limit is temporarily exhausted. Please wait before trying again.")
+        if "GROQ_API_KEY" in message:
+            raise HTTPException(status_code=503, detail="AI service is not configured. Add GROQ_API_KEY in Render environment settings.")
         raise HTTPException(status_code=502, detail="Cover letter generation failed. Please try again.")
 
 # ==========================================
@@ -453,12 +453,12 @@ def improve_resume_endpoint(request: ResumeImprovementRequest):
         if "429" in error_message or "quota" in error_message.lower():
             raise HTTPException(
                 status_code=429,
-                detail="Gemini quota is temporarily exhausted. Please wait before trying again.",
+                detail="Groq rate limit is temporarily exhausted. Please wait before trying again.",
             )
-        if "GEMINI_API_KEY" in error_message:
+        if "GROQ_API_KEY" in error_message:
             raise HTTPException(
                 status_code=503,
-                detail="AI service is not configured. Set GEMINI_API_KEY in backend/.env.",
+                detail="AI service is not configured. Set GROQ_API_KEY in backend/.env.",
             )
         raise HTTPException(
             status_code=502,
@@ -485,7 +485,7 @@ def interview_prep_endpoint(request: InterviewPrepRequest):
         message = str(e)
         print("Interview preparation error:", message)
         if "429" in message or "quota" in message.lower():
-            raise HTTPException(status_code=429, detail="Gemini quota is temporarily exhausted. Please wait before trying again.")
-        if "GEMINI_API_KEY" in message:
-            raise HTTPException(status_code=503, detail="AI service is not configured. Add GEMINI_API_KEY in Render environment settings.")
+            raise HTTPException(status_code=429, detail="Groq rate limit is temporarily exhausted. Please wait before trying again.")
+        if "GROQ_API_KEY" in message:
+            raise HTTPException(status_code=503, detail="AI service is not configured. Add GROQ_API_KEY in Render environment settings.")
         raise HTTPException(status_code=502, detail="Interview preparation failed. Please try again.")
