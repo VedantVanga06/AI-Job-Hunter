@@ -745,6 +745,20 @@ const handleGenerateCoverLetter = async () => {
     <p className="resume-disclaimer">Review every suggestion before using it. Never add skills, experience, or achievements that are not true.</p>
   </section>
 )}
+
+<section className="interview-prep-panel">
+  <div className="interview-prep-heading">
+    <div><span className="resume-eyebrow">NEXT-ROUND READY</span><h2>Interview prep, tailored to this role</h2><p>Turn your resume and the job description into a focused practice plan.</p></div>
+    <button className="improve-resume-button" onClick={handleGenerateInterviewPrep} disabled={generatingInterviewPrep || analyzing || uploading}>{generatingInterviewPrep ? "Building your prep…" : "Generate interview prep ↗"}</button>
+  </div>
+  {interviewPrep && <div className="interview-prep-grid">
+    <article className="interview-prep-card interview-intro-card"><span className="improvement-label">YOUR 60-SECOND INTRO</span><p>{interviewPrep.introduction}</p><button className="secondary-action" onClick={() => navigator.clipboard.writeText(interviewPrep.introduction || "")}>Copy introduction</button></article>
+    <article className="interview-prep-card"><h3>Technical practice</h3><ol>{(interviewPrep.technical_questions || []).map((item, index) => <li key={index}>{item}</li>)}</ol></article>
+    <article className="interview-prep-card"><h3>HR & behavioural questions</h3><ol>{(interviewPrep.hr_questions || []).map((item, index) => <li key={index}>{item}</li>)}</ol></article>
+    <article className="interview-prep-card"><h3>Preparation checklist</h3><ul>{(interviewPrep.preparation_tips || []).map((item, index) => <li key={index}>{item}</li>)}</ul></article>
+  </div>}
+</section>
+
 <div className="cover-letter-box">
   <button
     className="cover-letter-button"
