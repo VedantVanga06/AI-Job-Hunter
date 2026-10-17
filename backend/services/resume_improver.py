@@ -7,8 +7,11 @@ from pydantic import BaseModel
 
 load_dotenv()
 
-_api_key = os.getenv("GEMINI_API_KEY")
-client = genai.Client(api_key=_api_key) if _api_key else None
+def _get_client():
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise RuntimeError("GEMINI_API_KEY is not configured.")
+    return genai.Client(api_key=api_key)
 
 
 class ResumeImprovement(BaseModel):
@@ -24,9 +27,6 @@ class ResumeImprovement(BaseModel):
 def improve_resume(resume: str) -> ResumeImprovement:
     if not resume.strip():
         raise ValueError("Resume text cannot be empty.")
-    if client is None:
-        raise RuntimeError("GEMINI_API_KEY is not configured in backend/.env.")
-
     prompt = f"""
 You are an expert resume writer, ATS specialist, and technical recruiter.
 Analyze the candidate's resume and return practical, honest improvements.
@@ -52,7 +52,7 @@ Return:
 6. project_improvements: specific ways to better present existing projects.
 7. recommendations: prioritized practical next steps.
 """
-    interaction = client.interactions.create(
+    interaction = _get_client().interactions.create(
         model="gemini-3.1-flash-lite",
         input=prompt,
         response_format={
