@@ -849,6 +849,21 @@ const handleGenerateCoverLetter = async () => {
               APPLICATION LIST
           ================================= */}
 
+          <div className="tracker-actions">
+            <p className="tracker-helper">Track saved roles from your analysis or add opportunities you found elsewhere.</p>
+            <button className="add-application-button" onClick={() => setShowManualApplication((value) => !value)}>{showManualApplication ? "− Close form" : "+ Add application"}</button>
+          </div>
+          {showManualApplication && <form className="manual-application-form" onSubmit={handleManualApplicationSave}>
+            <div className="manual-form-heading"><span className="section-index">QUICK ADD</span><h3>Add an opportunity</h3><p>No AI analysis needed — save a job now and update it as you progress.</p></div>
+            <div className="manual-form-grid">
+              <label>Company<input value={manualCompany} onChange={(e) => setManualCompany(e.target.value)} placeholder="Company name" required /></label>
+              <label>Job title<input value={manualTitle} onChange={(e) => setManualTitle(e.target.value)} placeholder="e.g. Data Science Intern" required /></label>
+              <label>Job URL<input type="url" value={manualUrl} onChange={(e) => setManualUrl(e.target.value)} placeholder="https://…" /></label>
+              <label>Current status<select value={manualStatus} onChange={(e) => setManualStatus(e.target.value)}><option>Wishlist</option><option>Saved</option><option>Applied</option><option>Assessment</option><option>Interview</option><option>Offer</option><option>Rejected</option><option>Withdrawn</option></select></label>
+              <label className="manual-notes-field">Notes<textarea value={manualNotes} onChange={(e) => setManualNotes(e.target.value)} placeholder="Deadline, contact person, follow-up date, or notes…" rows={3} /></label>
+            </div>
+            <button className="save-tracker-button" type="submit" disabled={savingManualApplication}>{savingManualApplication ? "Saving…" : "Save application"}</button>
+          </form>}
           <div className="applications-list">
             <div className="applications-list-header">
               <h3>Your Applications</h3>
