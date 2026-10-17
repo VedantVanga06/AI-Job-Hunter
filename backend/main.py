@@ -6,7 +6,8 @@ from fastapi import (
     Depends,
 )
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, field_validator
+from sqlalchemy import text
 from sqlalchemy.orm import Session
 
 import os
@@ -53,7 +54,7 @@ app.add_middleware(
         origin.strip()
         for origin in os.getenv(
             "FRONTEND_ORIGINS",
-            "http://localhost:5173,http://127.0.0.1:5173",
+            "http://localhost:5173,http://127.0.0.1:5173,https://ai-job-hunter-web.onrender.com",
         ).split(",")
         if origin.strip()
     ],
@@ -67,28 +68,48 @@ app.add_middleware(
 # REQUEST MODELS
 # ==========================================
 
+APPLICATION_STATUSES = {
+    "Wishlist", "Saved", "Applied", "Assessment",
+    "Interview", "Offer", "Rejected", "Withdrawn",
+}
+
+
 class JobAnalysisRequest(BaseModel):
-    resume: str
-    job_description: str
+    resume: str = Field(min_length=1, max_length=100_000)
+    job_description: str = Field(min_length=1, max_length=50_000)
 
 
 class ResumeAnalysisRequest(BaseModel):
-    resume: str
+    resume: str = Field(min_length=1, max_length=100_000)
 
 
 class JobApplicationCreate(BaseModel):
-    company: str
-    job_title: str
-    job_url: str | None = None
-    match_score: int | None = None
+    company: str = Field(min_length=1, max_length=200)
+    job_title: str = Field(min_length=1, max_length=200)
+    job_url: str | None = Field(default=None, max_length=500)
+    match_score: int | None = Field(default=None, ge=0, le=100)
     status: str = "Saved"
-    notes: str | None = None
+    notes: str | None = Field(default=None, max_length=10_000)
+
+    @field_validator("status")
+    @classmethod
+    def validate_status(cls, value: str) -> str:
+        if value not in APPLICATION_STATUSES:
+            raise ValueError("Unsupported application status.")
+        return value
 
 
 class JobApplicationUpdate(BaseModel):
     status: str | None = None
-    notes: str | None = None
-    job_url: str | None = None
+    notes: str | None = Field(default=None, max_length=10_000)
+    job_url: str | None = Field(default=None, max_length=500)
+
+    @field_validator("status")
+    @classmethod
+    def validate_status(cls, value: str | None) -> str | None:
+        if value is not None and value not in APPLICATION_STATUSES:
+            raise ValueError("Unsupported application status.")
+        return value
 
 
 # ==========================================
@@ -104,9 +125,12 @@ def home():
 
 @app.get("/health")
 def health():
-    return {
-        "status": "healthy"
-    }
+    try:
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+        return {"status": "healthy", "database": "connected"}
+    except Exception:
+        raise HTTPException(status_code=503, detail="Database is unavailable.")
 
 
 # ==========================================
@@ -140,10 +164,12 @@ async def upload_resume(file: UploadFile = File(...)):
     )
 
     temp_path = None
+    max_upload_bytes = 10 * 1024 * 1024
 
     try:
-
-        file_content = await file.read()
+        file_content = await file.read(max_upload_bytes + 1)
+        if len(file_content) > max_upload_bytes:
+            raise HTTPException(status_code=413, detail="Resume file must be 10 MB or smaller.")
 
         with tempfile.NamedTemporaryFile(
             delete=False,
@@ -171,13 +197,8 @@ async def upload_resume(file: UploadFile = File(...)):
         raise
 
     except Exception as e:
-
-        print("Resume upload error:", e)
-
-        raise HTTPException(
-            status_code=500,
-            detail="Failed to process the resume."
-        )
+        print("Resume upload error:", type(e).__name__)
+        raise HTTPException(status_code=500, detail="Failed to process the resume.")
 
     finally:
 
@@ -387,10 +408,10 @@ def delete_application(
         "message": "Application deleted successfully."
     }
 class CoverLetterRequest(BaseModel):
-    resume: str
-    job_description: str
-    job_title: str = ""
-    company_name: str = ""
+    resume: str = Field(min_length=1, max_length=100_000)
+    job_description: str = Field(min_length=1, max_length=50_000)
+    job_title: str = Field(default="", max_length=200)
+    company_name: str = Field(default="", max_length=200)
 
 
 @app.post("/api/generate-cover-letter")
@@ -409,7 +430,7 @@ def generate_cover_letter_endpoint(request: CoverLetterRequest):
 # ==========================================
 
 class ResumeImprovementRequest(BaseModel):
-    resume: str
+    resume: str = Field(min_length=1, max_length=100_000)
 
 
 @app.post("/api/improve-resume")
@@ -439,10 +460,10 @@ def improve_resume_endpoint(request: ResumeImprovementRequest):
 
 
 class InterviewPrepRequest(BaseModel):
-    resume: str
-    job_description: str
-    job_title: str = ""
-    company_name: str = ""
+    resume: str = Field(min_length=1, max_length=100_000)
+    job_description: str = Field(min_length=1, max_length=50_000)
+    job_title: str = Field(default="", max_length=200)
+    company_name: str = Field(default="", max_length=200)
 
 
 @app.post("/api/interview-prep")
