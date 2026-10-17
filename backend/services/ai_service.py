@@ -172,7 +172,7 @@ Give practical improvements that would make this resume stronger.
 Return ONLY structured JSON.
 """
 
-    interaction = client.interactions.create(
+    interaction = _get_client().interactions.create(
         model="gemini-3.1-flash-lite",
         input=prompt,
         response_format={
@@ -235,7 +235,7 @@ Do not use placeholders such as [Name], [Company], or [Your Name].
 Return only the cover letter.
 """
 
-    interaction = client.interactions.create(
+    interaction = _get_client().interactions.create(
         model="gemini-3.8-flash",
         input=prompt,
         response_format={
